@@ -52,6 +52,7 @@ ex) cd d:\repository\
 	
 15.원격저장소에 내 저장소 업로드하기(push) - push = 업로드
 	내 pc에서 변경된 내용이 있으면 원격 저장소에 업로드해야 한다. 업로드 하는 것을 push라고 한다.
+	***add, commit후에 push해주어야 한다.
 	
 16.원격저장소 복제하기 변경이력도 다 복제된다(clone) - clone = svn에서 checkout이라고 생각하면 될것같다.
 
