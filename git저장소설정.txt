@@ -37,3 +37,11 @@ ex) cd d:\repository\
 	
 10.파일 등록( $git add <file>..) / <file>대신에 .을 지정하면 모든 파일을 등록함
 	$git add .
+
+11.파일등록 후 git status로 폴더/파일 상태확인
+
+12.폴더/파일 commit( $git commit -m "<커밋설명>") -m이 무엇일까?
+	$git commit -m "첫번째커밋"
+	
+13.변경이력확인
+	$git log
