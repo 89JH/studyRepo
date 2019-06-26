@@ -36,6 +36,7 @@ ex) cd d:\repository\
 	$git status
 	
 10.파일 등록( $git add <file>..) / <file>대신에 .을 지정하면 모든 파일을 등록함
+폴더/파일등이 변경되면 다시 add를 해주어야 한다.
 	$git add .
 
 11.파일등록 후 git status로 폴더/파일 상태확인
