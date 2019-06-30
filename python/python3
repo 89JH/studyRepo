@@ -1,0 +1,8 @@
+파이썬의 설치 경로 찾기
+-cmd
+python -m site --user-site
+
+-소스 상에서
+import site;
+print site.getsitepackages()
+
