@@ -115,3 +115,11 @@ merge를 하게되면 git이 현재 브런치에 자동으로 알아서 변경�
 25.log명령어로 이력 확인 - graph를 지정하면 선으로 된 그림 형태로 이력 흐름이 표시된다. 옵션으로 oneline을 지정하면 한줄로 커밋정보가 표시.
 	$git log --graph --oneline
  
+
+26.파이썬의 설치 경로 찾기
+-cmd
+python -m site --user-site
+
+-소스 상에서
+import site;
+print site.getsitepackages()
