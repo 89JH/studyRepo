@@ -1,8 +1,7 @@
-from tkinter import *
+from tkinter import * 
+import tkinter.messagebox as mb
 from tkinter.ttk import *
 from tkinter.scrolledtext import ScrolledText
-from paramiko import SSHClient
-from scp import SCPClient
 from ftplib import FTP
 import os
 import sys
@@ -17,8 +16,8 @@ import re
 
 import time
 
+portData = {}
 class settingTomcat(Frame):
-    prePortNum = ''
     returnVal = ''
     def __init__(self, master):
         Frame.__init__(self, master)
@@ -63,10 +62,8 @@ class settingTomcat(Frame):
 
         btn_addPath = Button(frame01, text='환경변수추가', command=lambda:btnPath01())
         btn_addPath.grid(row=7, column=0, sticky=W)
-        btn_addTomcat = Button(frame01, text='톰캣폴더복사', command=lambda:btnTomcat())
-        btn_addTomcat.grid(row=7, column=1)
-        btn_addConfig = Button(frame01, text='config설정', command=lambda:btnConfig())
-        btn_addConfig.grid(row=7, column=2)
+        btn_addTomcat = Button(frame01, width=25, text='톰캣폴더복사', command=lambda:btnTomcat())
+        btn_addTomcat.grid(row=7, column=1, columnspan=2)
 
         btn_portCheck = Button(frame01, text='톰캣포트확인', command=lambda:btnPcheck())
         btn_portCheck.grid(row=8, column=0, sticky=W)
@@ -89,18 +86,25 @@ class settingTomcat(Frame):
         portShutdown_label.grid(row=12, column=0, sticky=W)
         portShutdown_entry = Entry(frame01, width=10)
         portShutdown_entry.grid(row=12, column=1, sticky=W)
-        portShutdown_label2= Label(frame01, text='-1=>Port disable')
+        portShutdown_label2= Label(frame01, text='default : 8005')
         portShutdown_label2.grid(row=12, column=2, sticky=W)
 
-        portShutdown_label = Label(frame01, text='Redirect Port')
-        portShutdown_label.grid(row=13, column=0, sticky=W)
-        portShutdown_entry = Entry(frame01, width=10)
-        portShutdown_entry.grid(row=13, column=1, sticky=W)
+        portRedirect_label = Label(frame01, text='Redirect Port')
+        portRedirect_label.grid(row=13, column=0, sticky=W)
+        portRedirect_entry = Entry(frame01, width=10)
+        portRedirect_entry.grid(row=13, column=1, sticky=W)
+        portRedirect_label2 = Label(frame01, text='default : 8443')
+        portRedirect_label2.grid(row=13, column=2, sticky=W)
 
         portAJP_label = Label(frame01, text='AJP/1.3 Port')
         portAJP_label.grid(row=14, column=0, sticky=W)
         portAJP_entry = Entry(frame01, width=10)
         portAJP_entry.grid(row=14, column=1, sticky=W)
+        portAJP_label2 = Label(frame01, text='default : 8009')
+        portAJP_label2.grid(row=14, column=2, sticky=W)
+
+        btn_addConfig = Button(frame01, width=42, text='위 설정대로 server.xml 파일 세팅', command=lambda:btnConfig())
+        btn_addConfig.grid(row=15, column=0, columnspan=3)
 
         #외부 프로그램 실행 - os.system('notepad')
         #btn_notepad = Button(frame01, text='노트패트열기', command=lambda:btnNotePad()).pack()   
@@ -183,16 +187,15 @@ class settingTomcat(Frame):
 
         def btnConfig():
             print('----------------------------------시작----------------------------------')
-            tomcatPath = 'C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf'
+            tomcatPath = 'D:\\Apache Software Foundation\\Tomcat 8.5\\conf'
             for (path, dir, files) in os.walk(tomcatPath):
                 for fileNames in files:
                     #아래 코드는 확장자만 찾아서 가져온다.
                     #배치파일 수정할때 필요할듯 싶어서 남겨둠
                     ext = os.path.splitext(fileNames)[-1]
                     if fileNames == 'server.xml':
-                        print('1')
                         #with open(fileNames, 'r') as f:
-                        f=open(tomcatPath + "\\" + fileNames, 'r')
+                        f = open(tomcatPath + "\\" + fileNames, 'r')
                         #lines = f.readlines()
 
                         tree = elemTree.parse(tomcatPath + '\\' + fileNames)
@@ -201,16 +204,51 @@ class settingTomcat(Frame):
                         print(root.tag)
                         print(root.attrib)
 
+                        test = tree.find('./Service')
+                        test3 = tree.getiterator('service')
+                        print('테스트333')
+                        print(test3)
+                        print('테스트3333')
+
+                        test1 = test.find('Connector[2]')
+                        test2 = test.find('Connector[1]')
+
+                        print('테스트 태그 조회 시작')
+                        print(test.tag)
+                        print(test.attrib)
+                        print('테스트 태그 조회 종료')
+
+                        print('테스트 태그 조회 시작11111')
+                        print(test1.tag)
+                        print(test1.attrib)
+                        print('테스트 태그 조회 종료11111')
+
+                        print('테스트 태그 조회 시작22222')
+                        print(test2.tag)
+                        print(test2.attrib)
+                        print('테스트 태그 조회 종료22222')
+
+                        print('maxPort = ' + portData['maxPort'])
+                        print('redirectPort = ' + portData['redirecPort'])
+                        print('ajpPort = ' + portData['ajpPort'])
+
+
                         for port in root.iter('Server'):
                             print(port.get('port'))
                             #newPort = '5' + port.text
                             #port.text = newPort
-                            print('111111111111111111111 - ' + prePortNum)
-                            port.set('port' , prePortNum + port.get('port'))
+                            #print('111111111111111111111 - ' + prePortNum)
+                            #port.set('port' , prePortNum + port.get('port'))
+
+                        print(test2.iter('port'))
+
+                        for port2 in test.iter('port'):
+                            print('테스트 태그 조회 시작33333')
+                            print(port2.get('port'))
+                            print('테스트 태그 조회 종료33333')
                         
                         tree.write('D:\\server222.xml')     
 
-                        tree.write('C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\server.xml')
                         #tree.write('C:\\Users\\Choi.JH\\Documents\\server111.xml')
 
                         #for test in root.findall('port'):
@@ -264,9 +302,13 @@ class settingTomcat(Frame):
             for x,y in collections.Counter(ipnPort).most_common():
                 data.append(int(str(x).rpartition(':')[2]))
 
+            os.remove('D:\\test.txt')
+            if len(data) == 0:
+                mb.messagebox.showerror("오류", "현재 오픈되어있는 8080포트가 존재하지 않습니다.")
+                return
+
             data.remove(0)
             maxPort = str(max(data))
-            os.remove('D:\\test.txt')
 
             for item in data:
                 portCheck_entry.insert('end', str(item) + ',')
@@ -278,13 +320,39 @@ class settingTomcat(Frame):
             #entry에 마지막 ',' 제거한 값 입력
             portCheck_entry.insert('end', newPortVal)
 
+            #global 문을 사용하여 전역변수로 사용할 수도 있지만,
+            #global 문은 사용하지 않는 것을 추천한다..
+            #global 문을 사용하는 것은 함수가 매개 변수와 반환값을 이용해 외부와 소통하는 자연스러운 흐름을 깨트리는 것이다..
+            #global returnPort
+            #returnPort = prePortNum + '8080'
+            #shutdownPort = prePortNum + '8005'
+            #global redirectPort 
+            #redirectPort = prePortNum + '8443'
+            #global ajpPort 
+            #ajpPort = prePortNum + '8009'
+
             prePortNum = str(int(maxPort[:1])+1)
-            maxPort = prePortNum + '8080'
+            portData['maxPort'] = prePortNum + '8080'
+            #portData['shtdownPort'] = prePortNum + '8005'
+            portData['redirecPort'] = prePortNum + '8443'
+            portData['ajpPort'] = prePortNum + '8009'
+            
+            if int(portData['maxPort'])>65535:
+                mb.messagebox.showerror("오류", "포트 범위 초과")
+                portData['maxPort'] = ''
 
-            if int(maxPort)>65535:
-                maxPort = ''
-
-            portRecommend_entry.insert('end', maxPort)
+            if int(portData['redirecPort']) > 65535:
+                mb.messagebox.showerror("오류", "포트 범위 초과")
+                portData['redirecPort'] = ''
+            
+            if int(portData['ajpPort']) > 65535:
+                mb.messagebox.showerror("오류", "포트 범위 초과")
+                portData['ajpPort'] = ''
+            
+            portRecommend_entry.insert('end', portData['maxPort'])
+            portShutdown_entry.insert('end', '-1')
+            portRedirect_entry.insert('end', portData['redirecPort'])
+            portAJP_entry.insert('end', portData['ajpPort'])
 
         def btnNotePad():
             os.system('notepad')
