@@ -1,7 +1,8 @@
-from tkinter import * 
-import tkinter.messagebox as mb
-from tkinter.ttk import *
-from tkinter.scrolledtext import ScrolledText
+import tkinter as tk
+from tkinter import *
+from tkinter import messagebox
+#from tkinter.scrolledtext import ScrolledText
+from tkinter.scrolledtext import *
 from ftplib import FTP
 import os
 import sys
@@ -26,7 +27,7 @@ class settingTomcat(Frame):
         self.pack(fill=BOTH, expand=True)
 
         #CATALINA_HOME 버튼 + 조회하여 가져오는 text area
-        frame01 = Frame(self)
+        frame01 = tk.Frame(self)
         frame01.pack(fill=X)
 
         btn_cat = Button(frame01, text='CATALINA_HOME%', command=lambda:catPush())
@@ -74,7 +75,7 @@ class settingTomcat(Frame):
         
         #한줄 띄우기용
         #Label(frame01).pack()
-        portComment_label01 = Label(frame01, text='※포트자동 변경은 Connector포트의 뒷자리가\n8080일때만 유효합니다. 그 외 포트들은\n직접 server.xml파일을 열어 수정하는 것을 추천합니다.')
+        portComment_label01 = Label(frame01, text='※포트자동 변경은 Connector포트의 뒷자리가\n8080일때만 유효합니다. 그 외 포트들은\n직접 server.xml파일을 열어 수정하는 것을 추천합니다.\n(포트의범위는 65535까지입니다.)')
         portComment_label01.grid(row=10, column=0, columnspan=3, sticky=W)
 
         portRecommend_label = Label(frame01, text='추천port(Connector)')
@@ -106,6 +107,10 @@ class settingTomcat(Frame):
         btn_addConfig = Button(frame01, width=42, text='위 설정대로 server.xml 파일 세팅', command=lambda:btnConfig())
         btn_addConfig.grid(row=15, column=0, columnspan=3)
 
+        
+        btn_setBat = Button(frame01, width=42, text='.bat 파일 세팅', command=lambda:btnSetBat())
+        btn_setBat.grid(row=16, column=0, columnspan=3)
+
         #외부 프로그램 실행 - os.system('notepad')
         #btn_notepad = Button(frame01, text='노트패트열기', command=lambda:btnNotePad()).pack()   
         #btn_cmd = Button(frame01, text='CMD열기', command=lambda:btnCMD()).pack()
@@ -117,20 +122,20 @@ class settingTomcat(Frame):
             
             #운영시에는 'CATALINA_HOME' 으로 변경
             sorted(sKeys)
-            maxValue = 'JAVA_HOME'
+            maxValue = 'CATALINA_HOME'
             maxNum = 0
 
             for item in sKeys:
 
-                if 'JAVA_HOME' in item:
+                if 'CATALINA_HOME' in item:
                     if maxValue < item:
                         maxValue = item
 
                     sValue = os.environ[item]
                     text_cat.insert('end', '-' + item + '\n' +sValue + '\n')
 
-            maxNum = str(int(maxValue[9:]) + 1)
-            returnVal = maxValue.replace(maxValue[9:], maxNum)
+            maxNum = str(int(maxValue[13:]) + 1)
+            returnVal = maxValue.replace(maxValue[13:], maxNum)
             pathRec_entry.insert('end', returnVal)
             print('cat버튼클릭')
 
@@ -199,99 +204,59 @@ class settingTomcat(Frame):
                         #lines = f.readlines()
 
                         tree = elemTree.parse(tomcatPath + '\\' + fileNames)
+                        
+                        '''
+                        #root tag정보 가져오는 방법
+                        root = tree.getroot()
+                        #root tag명을 가져오는 방법
+                        root.tag
+                        #root 속성 값들을 가져오는 방법
+                        root.attrib
+                        '''
+                        
                         root = tree.getroot()
 
-                        print(root.tag)
-                        print(root.attrib)
-
-                        test = tree.find('./Service')
-                        test3 = tree.getiterator('service')
-                        print('테스트333')
-                        print(test3)
-                        print('테스트3333')
-
-                        test1 = test.find('Connector[2]')
-                        test2 = test.find('Connector[1]')
-
-                        print('테스트 태그 조회 시작')
-                        print(test.tag)
-                        print(test.attrib)
-                        print('테스트 태그 조회 종료')
-
-                        print('테스트 태그 조회 시작11111')
-                        print(test1.tag)
-                        print(test1.attrib)
-                        print('테스트 태그 조회 종료11111')
-
-                        print('테스트 태그 조회 시작22222')
-                        print(test2.tag)
-                        print(test2.attrib)
-                        print('테스트 태그 조회 종료22222')
-
-                        print('maxPort = ' + portData['maxPort'])
-                        print('redirectPort = ' + portData['redirecPort'])
-                        print('ajpPort = ' + portData['ajpPort'])
-
-
+                        #shutdown port - default : 8005
+                        #shutdown port = '-1' 로 하면 shutdown 포트를 따로 사용하지 않는다는 의미.
+                        #톰캣을 여러개 띄우고(서비스가 여러개라서)있으므로 -1로 지정해서 사용하는게 편할듯하다.
+                        print('-----------------------------------shutdown포트 설정 시작-----------------------------------')
                         for port in root.iter('Server'):
-                            print(port.get('port'))
-                            #newPort = '5' + port.text
-                            #port.text = newPort
-                            #print('111111111111111111111 - ' + prePortNum)
-                            #port.set('port' , prePortNum + port.get('port'))
+                            port.set('port', portData['shutdownPort'])
+                        print('shutdownPort = ' + portData['shutdownPort'])
+                        print('-----------------------------------shutdown포트 설정 완료-----------------------------------')
 
-                        print(test2.iter('port'))
+                        rService = tree.find('./Service')
+                        #HTTP포트(8080)
+                        conn01 = rService.find('Connector[1]')
+                        #AJP포트(8009)
+                        conn02 = rService.find('Connector[2]')
 
-                        for port2 in test.iter('port'):
-                            print('테스트 태그 조회 시작33333')
-                            print(port2.get('port'))
-                            print('테스트 태그 조회 종료33333')
-                        
-                        tree.write('D:\\server222.xml')     
+                        print('-----------------------------------HTTP포트 설정 시작-----------------------------------')
+                        for port in conn01.iter('Connector'):
+                            port.set('port', portData['returnPort'])
+                            port.set('redirectPort', portData['redirectPort'])
+                        print('httpPort = ' + portData['returnPort'])
+                        print('httpRedirectPort = ' + portData['redirectPort'])
+                        print('-----------------------------------HTTP포트 설정 완료-----------------------------------')
+
+                        print('-----------------------------------AJP/1.3포트 설정 시작-----------------------------------')
+                        for port in conn02.iter('Connector'):
+                            port.set('port', portData['ajpPort'])
+                            port.set('redirectPort', portData['redirectPort'])
+                        print('ajpPort = ' + portData['ajpPort'])
+                        print('ajpRedirectPort = ' + portData['redirectPort'])
+                        print('-----------------------------------AJP/1.3포트 설정 종료-----------------------------------')
+
+                        #tree.write(fileNames)     
 
                         #tree.write('C:\\Users\\Choi.JH\\Documents\\server111.xml')
 
-                        #for test in root.findall('port'):
-                        #    print('11111111111111111111111')
-                        #    port = test.find('port').text
-                        #    print(port)
-
-
-
-                        #tree.write('C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\server.xml')
-
-                        #for child in root:
-                        #    print(child.tag)
-
-                        for test in root.iter('GlobalNamingResources'):
-                            print(test)
-
-                        #print(lines)
-                        #for line in lines:
-                        #    if 'Server' in line:
-                        #        print(lines)
+                        tree.write('D:\\Apache Software Foundation\\Tomcat 8.5\\conf\\server.xml')
             
             print('-----------------------------------끝----------------------------------')
 
 
         def btnPcheck():
-            hosts = ['127.0.0.1','0.0.0.0']
-            ports = [8080]
-            '''
-            for host in hosts:
-                for port in ports:
-                    try:
-                        print('[+] Connection to ' + host + ':' + str(port))
-                        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        s.connect_ex((host, port))
-                        banner = s.recv(1024)
-                        if banner:
-                            print('[+] Port ' + str(port) + ' open:' + banner)
-                        s.close()
-                    except:
-                        pass
-            '''
-
             #포트 8080 대상목록 .txt 파일로 저장
             os.system('netstat -anp tcp | findstr 8080 >> d:\\test.txt')
 
@@ -304,7 +269,7 @@ class settingTomcat(Frame):
 
             os.remove('D:\\test.txt')
             if len(data) == 0:
-                mb.messagebox.showerror("오류", "현재 오픈되어있는 8080포트가 존재하지 않습니다.")
+                messagebox.showerror("오류", "현재 오픈되어있는 8080포트가 존재하지 않습니다.")
                 return
 
             data.remove(0)
@@ -332,27 +297,31 @@ class settingTomcat(Frame):
             #ajpPort = prePortNum + '8009'
 
             prePortNum = str(int(maxPort[:1])+1)
-            portData['maxPort'] = prePortNum + '8080'
-            #portData['shtdownPort'] = prePortNum + '8005'
-            portData['redirecPort'] = prePortNum + '8443'
+            portData['returnPort'] = prePortNum + '8080'
+            #portData['shutdownPort'] = prePortNum + '8005'
+            portData['shutdownPort'] = '-1'
+            portData['redirectPort'] = prePortNum + '8443'
             portData['ajpPort'] = prePortNum + '8009'
             
-            if int(portData['maxPort'])>65535:
-                mb.messagebox.showerror("오류", "포트 범위 초과")
-                portData['maxPort'] = ''
+            if int(portData['returnPort'])>65535:
+                messagebox.showerror("오류", "포트 범위 초과")
+                portData['returnPort'] = ''
 
-            if int(portData['redirecPort']) > 65535:
-                mb.messagebox.showerror("오류", "포트 범위 초과")
-                portData['redirecPort'] = ''
+            if int(portData['redirectPort']) > 65535:
+                messagebox.showerror("오류", "포트 범위 초과")
+                portData['redirectPort'] = ''
             
             if int(portData['ajpPort']) > 65535:
-                mb.messagebox.showerror("오류", "포트 범위 초과")
+                messagebox.showerror("오류", "포트 범위 초과")
                 portData['ajpPort'] = ''
             
-            portRecommend_entry.insert('end', portData['maxPort'])
-            portShutdown_entry.insert('end', '-1')
-            portRedirect_entry.insert('end', portData['redirecPort'])
+            portRecommend_entry.insert('end', portData['returnPort'])
+            portShutdown_entry.insert('end', portData['shutdownPort'])
+            portRedirect_entry.insert('end', portData['redirectPort'])
             portAJP_entry.insert('end', portData['ajpPort'])
+
+        def btnSetBat():
+            print('.bat파일세팅')
 
         def btnNotePad():
             os.system('notepad')
@@ -413,6 +382,14 @@ class nextFrame(Frame):
         
 
 def elevate():
+    '''
+    window 기능을 사용하기 위해서는 win32com library가 있어야한다.
+    python에서 pywin32 패키지를 설치하면 된다.
+    아래 링크 - pywin32 - 버전선택 - 윈도우환경, 파이썬버전에 맞는 버전 선택하여 다운 후 설치
+
+    https://sourceforge.net/projects/pywin32/files/?source=navbar
+
+    '''
     import ctypes, win32com.shell.shell, win32event, win32process
     
     outPath = r'%s\%s.out' % (os.environ["TEMP"], os.path.basename(__file__))
