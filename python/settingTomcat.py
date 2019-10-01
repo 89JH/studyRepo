@@ -9,13 +9,14 @@ import sys
 import ctypes
 import urllib.parse
 import xml.etree.ElementTree as elemTree
-import socket
-import subprocess
-
+#import socket
+#import subprocess
 import collections
-import re
+#import re
+#import time
 
-import time
+#파일 및 디렉토리 복사할때사용하는 library
+import shutil, errno
 
 portData = {}
 class settingTomcat(Frame):
@@ -41,9 +42,10 @@ class settingTomcat(Frame):
         text_cat.grid(row=1, columnspan=4)
         #text_cat.pack()
 
-        #한줄 띄우기용
-        #Label(frame01).pack()
-        Label(frame01).grid(row=3)
+        projectNm_label = Label(frame01, text='프로젝트명')
+        projectNm_label.grid(row=3, column=0, sticky=W)
+        projectNm_entry = Entry(frame01, width=25)
+        projectNm_entry.grid(row=3, column=1, columnspan=2)
         
         pathRec_label = Label(frame01, text='추천환경변수명')
         pathRec_label.grid(row=4, column=0, sticky=W)
@@ -107,9 +109,14 @@ class settingTomcat(Frame):
         btn_addConfig = Button(frame01, width=42, text='위 설정대로 server.xml 파일 세팅', command=lambda:btnConfig())
         btn_addConfig.grid(row=15, column=0, columnspan=3)
 
-        
         btn_setBat = Button(frame01, width=42, text='.bat 파일 세팅', command=lambda:btnSetBat())
         btn_setBat.grid(row=16, column=0, columnspan=3)
+        
+        btn_release95 = Button(frame01, width=42, text='개발(95)서버 배포', command=lambda:btnRelease95)
+        btn_release95.grid(row=17, column=0, columnspan=3)
+        btn_release = Button(frame01, width=42, text='운영(81,82,83)서버 배포')
+        btn_release.grid(row=18, column=0, columnspan=3)
+
 
         #외부 프로그램 실행 - os.system('notepad')
         #btn_notepad = Button(frame01, text='노트패트열기', command=lambda:btnNotePad()).pack()   
@@ -161,34 +168,16 @@ class settingTomcat(Frame):
             print('환경변수추가버튼 클릭')
 
         def btnTomcat():
-            #print(svIp)
-            #print(svDir)
-            ftp = FTP()
-            data = []
-
-            try:
-                ftp.connect(IP, 포트)
-                ftp.login(아이디, 비밀번호)
-                ftp.cwd('/tomcatTest')
-                #ftp.cwd('/')
-
-                #print(filenames)
-                print('ftp연결 성공')
-
-            except Exception as E:
-                print('ftp연결 실패-' + E)
-
-            print(ftp.pwd())
+            bDir = 'D:\\Apache Software Foundation'
+            tDir = 'D:\\Apache Software Foundation' + '_' + projectNm_entry.get()
             
-            #filenames = ftp.nlst()
-
             try:
-                data = ftp.nlst()
-            except Exception as E:
-                print(E)
-
-            print('4')
-
+                shutil.copytree(bDir, tDir)
+            except OSError as E:
+                if E.errno == errno.ENOTDIR:
+                    shutil.copy(bDir, tDir)
+                else:
+                    raise
 
         def btnConfig():
             print('----------------------------------시작----------------------------------')
@@ -255,7 +244,7 @@ class settingTomcat(Frame):
             
             print('-----------------------------------끝----------------------------------')
 
-
+        #---------------------------------폼캣포트확인 버튼 클릭 시작---------------------------------
         def btnPcheck():
             #포트 8080 대상목록 .txt 파일로 저장
             os.system('netstat -anp tcp | findstr 8080 >> d:\\test.txt')
@@ -319,17 +308,34 @@ class settingTomcat(Frame):
             portShutdown_entry.insert('end', portData['shutdownPort'])
             portRedirect_entry.insert('end', portData['redirectPort'])
             portAJP_entry.insert('end', portData['ajpPort'])
+        #---------------------------------폼캣포트확인 버튼 클릭 종료---------------------------------
 
+        #.bat파일세팅 버튼 클릭 시작
         def btnSetBat():
             print('.bat파일세팅')
+        #.bat파일세팅 버튼 클릭 종료
 
-        def btnNotePad():
-            os.system('notepad')
-            print('노트패드버튼 클릭')
+        #개발서버 배포 버튼 클릭 시작
+        def btnRelease95():
+            print('개발서버배포')
+            '''#FTP는 조금 더 공부해보고 반영하기
+            ftp = FTP()
+            data = []
 
-        def btnCMD():
-#            os.system('run')
-            print('CMD열기')
+            try:
+                ftp.connect(IP, 포트)
+                ftp.login(아이디, 비밀번호)
+                ftp.cwd('/tomcatTest')
+                #ftp.cwd('/')
+
+                #print(filenames)
+                print('ftp연결 성공')
+                #filenames = ftp.nlst()
+
+            except Exception as E:
+                print('ftp연결 실패-' + E)
+            '''
+        #개발서버 배포 버튼 클릭 종룔
 
 ''' 첫번째 - 관리자 권한으로 실행하기, 이 방법을 사용하면
     2개의 프로그램이 실행된다.. 관리자모드, 일반모드
@@ -417,7 +423,9 @@ def main():
     base = Tk()
     # width x height + x축 + y축
     base.geometry('300x700+100+100')    
-    app = settingTomcat(base)
+    #app변수는 어디서 사용을할까..?
+    #app = settingTomcat(base)
+    settingTomcat(base)
     base.mainloop()
 
 if __name__ == '__main__':
