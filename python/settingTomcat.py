@@ -19,6 +19,7 @@ import collections
 import shutil, errno
 
 portData = {}
+pathData = {}
 class settingTomcat(Frame):
     returnVal = ''
     def __init__(self, master):
@@ -106,16 +107,19 @@ class settingTomcat(Frame):
         portAJP_label2 = Label(frame01, text='default : 8009')
         portAJP_label2.grid(row=14, column=2, sticky=W)
 
+        path_entry = Entry(frame01, width=42)
+        path_entry.grid(row=15, columnspan=3)
+
         btn_addConfig = Button(frame01, width=42, text='위 설정대로 server.xml 파일 세팅', command=lambda:btnConfig())
-        btn_addConfig.grid(row=15, column=0, columnspan=3)
+        btn_addConfig.grid(row=16, column=0, columnspan=3)
 
         btn_setBat = Button(frame01, width=42, text='.bat 파일 세팅', command=lambda:btnSetBat())
-        btn_setBat.grid(row=16, column=0, columnspan=3)
+        btn_setBat.grid(row=17, column=0, columnspan=3)
         
-        btn_release95 = Button(frame01, width=42, text='개발(95)서버 배포', command=lambda:btnRelease95)
-        btn_release95.grid(row=17, column=0, columnspan=3)
-        btn_release = Button(frame01, width=42, text='운영(81,82,83)서버 배포')
-        btn_release.grid(row=18, column=0, columnspan=3)
+        btn_release95 = Button(frame01, width=42, text='개발(95)서버 배포(구현X)', command=lambda:btnRelease95)
+        btn_release95.grid(row=18, column=0, columnspan=3)
+        btn_release = Button(frame01, width=42, text='운영(81,82,83)서버 배포(진행중)')
+        btn_release.grid(row=19, column=0, columnspan=3)
 
 
         #외부 프로그램 실행 - os.system('notepad')
@@ -147,20 +151,12 @@ class settingTomcat(Frame):
             print('cat버튼클릭')
 
         def btnPath01():
-            #os.environ모듈도 환경변수를 세팅할 수 있을것 같긴한데...
-            #env = os.environ['JAVA_HOME2']
-            #newPath = r"C:\pythonTest;"# + env['JAVA_HOME2']
-            #newPath = r''
-            #env = newPath
-
             #pathNm = 'JAVA_HOME2'
             #entry창에 입력된 값을 가져온다
             pathNm = Entry.get(pathNm_entry)
             #setPath = 'C:\\Program Files\\apacheTest'
             setPath = Entry.get(pathEnv_entry)
             resultPath = 'SETX {0} "{1}" /M'.format(pathNm, setPath)
-            #포트확인
-            #'netstat -ano | findstr 8080'
 
             print('resultPath = ' + resultPath)
             os.system(resultPath)
@@ -168,31 +164,49 @@ class settingTomcat(Frame):
             print('환경변수추가버튼 클릭')
 
         def btnTomcat():
-            bDir = 'D:\\Apache Software Foundation'
-            tDir = 'D:\\Apache Software Foundation' + '_' + projectNm_entry.get()
+            print('----------------------------------톰캣폴더복사 시작----------------------------------')
+            if projectNm_entry.get().replace(' ', '') == '':
+                messagebox.showerror('오류', '프로젝트명이 입력되지 않았습니다.')
+                return
+
+            #개발서버에서 실행시 특정 폴더에서 복사해오는걸로 설정.. 테스트도 필요
+            pathData['bDir'] = 'D:\\Apache Software Foundation'
+            pathData['tDir'] = 'D:\\Apache Software Foundation' + '_' + projectNm_entry.get().replace(' ', '')
             
             try:
-                shutil.copytree(bDir, tDir)
+                shutil.copytree(pathData['bDir'], pathData['tDir'])
+                path_entry.insert('end', pathData['tDir'])
             except OSError as E:
                 if E.errno == errno.ENOTDIR:
-                    shutil.copy(bDir, tDir)
+                    shutil.copy(pathData['bDir'], pathData['tDir'])
+                    path_entry.insert('end', pathData['tDir'])
                 else:
-                    raise
+                    #raise
+                    messagebox.showerror('오류', E)
+            print('----------------------------------톰캣폴더복사 종료----------------------------------')
 
         def btnConfig():
-            print('----------------------------------시작----------------------------------')
-            tomcatPath = 'D:\\Apache Software Foundation\\Tomcat 8.5\\conf'
+            print('----------------------------------server.xml 설정 시작----------------------------------')
+            tomcatPath = pathData['tDir'] + '\\Tomcat 8.5\\conf'
+
+            if tomcatPath == '':
+                messagebox.showerror('오류', '경로가 지정되지 않았습니다.')
+                return
+
+            '''
+            for문에 3개가 꼭있어야한다.
+            왜냐하면 os.walk(tomcatPath)의 결과값이 경로/디렉토리/파일목록
+            세가지로 분류되어 결과가 나온다.
+            우리는 파일목록만 있으면 되는데, 파일목록만 뽑아내는 방법을 현재는 모름
+            '''
             for (path, dir, files) in os.walk(tomcatPath):
                 for fileNames in files:
                     #아래 코드는 확장자만 찾아서 가져온다.
                     #배치파일 수정할때 필요할듯 싶어서 남겨둠
-                    ext = os.path.splitext(fileNames)[-1]
+                    #ext = os.path.splitext(fileNames)[-1]
                     if fileNames == 'server.xml':
-                        #with open(fileNames, 'r') as f:
-                        f = open(tomcatPath + "\\" + fileNames, 'r')
-                        #lines = f.readlines()
-
-                        tree = elemTree.parse(tomcatPath + '\\' + fileNames)
+                        file = tomcatPath + '\\' + fileNames
+                        tree = elemTree.parse(file)
                         
                         '''
                         #root tag정보 가져오는 방법
@@ -210,8 +224,8 @@ class settingTomcat(Frame):
                         #톰캣을 여러개 띄우고(서비스가 여러개라서)있으므로 -1로 지정해서 사용하는게 편할듯하다.
                         print('-----------------------------------shutdown포트 설정 시작-----------------------------------')
                         for port in root.iter('Server'):
-                            port.set('port', portData['shutdownPort'])
-                        print('shutdownPort = ' + portData['shutdownPort'])
+                            port.set('port', portShutdown_entry.get())
+                        print('shutdownPort = ' + portShutdown_entry.get())
                         print('-----------------------------------shutdown포트 설정 완료-----------------------------------')
 
                         rService = tree.find('./Service')
@@ -222,41 +236,39 @@ class settingTomcat(Frame):
 
                         print('-----------------------------------HTTP포트 설정 시작-----------------------------------')
                         for port in conn01.iter('Connector'):
-                            port.set('port', portData['returnPort'])
-                            port.set('redirectPort', portData['redirectPort'])
-                        print('httpPort = ' + portData['returnPort'])
-                        print('httpRedirectPort = ' + portData['redirectPort'])
+                            port.set('port', portRecommend_entry.get())
+                            port.set('redirectPort', portRedirect_entry.get())
+                        print('httpPort = ' + portRecommend_entry.get())
+                        print('httpRedirectPort = ' + portRedirect_entry.get())
                         print('-----------------------------------HTTP포트 설정 완료-----------------------------------')
 
                         print('-----------------------------------AJP/1.3포트 설정 시작-----------------------------------')
                         for port in conn02.iter('Connector'):
-                            port.set('port', portData['ajpPort'])
-                            port.set('redirectPort', portData['redirectPort'])
-                        print('ajpPort = ' + portData['ajpPort'])
-                        print('ajpRedirectPort = ' + portData['redirectPort'])
+                            port.set('port', portAJP_entry.get())
+                            port.set('redirectPort', portRedirect_entry.get())
+                        print('ajpPort = ' + portAJP_entry.get())
+                        print('ajpRedirectPort = ' + portRedirect_entry.get())
                         print('-----------------------------------AJP/1.3포트 설정 종료-----------------------------------')
 
-                        #tree.write(fileNames)     
-
-                        #tree.write('C:\\Users\\Choi.JH\\Documents\\server111.xml')
-
-                        tree.write('D:\\Apache Software Foundation\\Tomcat 8.5\\conf\\server.xml')
+                        #server.xml파일에 적용..
+                        tree.write(file)
             
-            print('-----------------------------------끝----------------------------------')
+            print('----------------------------------server.xml 설정 종료----------------------------------')
 
         #---------------------------------폼캣포트확인 버튼 클릭 시작---------------------------------
         def btnPcheck():
+            print('----------------------------------톰캣포트확인 시작----------------------------------')
             #포트 8080 대상목록 .txt 파일로 저장
-            os.system('netstat -anp tcp | findstr 8080 >> d:\\test.txt')
+            os.system('netstat -anp tcp | findstr 8080 >> c:\\test.txt')
 
-            filePath = 'D:\\test.txt'
+            filePath = 'c:\\test.txt'
             ipnPort = re.findall(r'\d+[.]\d+[.]\d+[.]\d+[:]\d+', open(filePath).read().lower())
 
             data = []
             for x,y in collections.Counter(ipnPort).most_common():
                 data.append(int(str(x).rpartition(':')[2]))
 
-            os.remove('D:\\test.txt')
+            os.remove('c:\\test.txt')
             if len(data) == 0:
                 messagebox.showerror("오류", "현재 오픈되어있는 8080포트가 존재하지 않습니다.")
                 return
@@ -292,7 +304,7 @@ class settingTomcat(Frame):
             portData['redirectPort'] = prePortNum + '8443'
             portData['ajpPort'] = prePortNum + '8009'
             
-            if int(portData['returnPort'])>65535:
+            if int(portData['returnPort']) > 65535:
                 messagebox.showerror("오류", "포트 범위 초과")
                 portData['returnPort'] = ''
 
@@ -308,12 +320,45 @@ class settingTomcat(Frame):
             portShutdown_entry.insert('end', portData['shutdownPort'])
             portRedirect_entry.insert('end', portData['redirectPort'])
             portAJP_entry.insert('end', portData['ajpPort'])
+
+            print('----------------------------------톰캣포트확인 종료----------------------------------')
         #---------------------------------폼캣포트확인 버튼 클릭 종료---------------------------------
 
         #.bat파일세팅 버튼 클릭 시작
         def btnSetBat():
-            print('.bat파일세팅')
-        #.bat파일세팅 버튼 클릭 종료
+            print('----------------------------------.bat파일 설정 시작----------------------------------')
+            tomcatPath = pathData['tDir'] + '\\Tomcat 8.5\\bin'
+
+            if tomcatPath == '':
+                messagebox.showerror('오류', '경로가 지정되지 않았습니다.')
+                return
+            
+            for (path, dir, files) in os.walk(tomcatPath):
+                for fileNames in files:
+                    
+                    #아래 코드는 확장자만 찾아서 가져온다.
+                    #배치파일 수정할때 필요할듯 싶어서 남겨둠
+                    ext = os.path.splitext(fileNames)[-1]
+                    if ext == '.bat':
+                        #with open(fileNames, 'r+') as f:
+                        #with open(pathData['tDir']+'\\Tomcat 8.5\\bin\\catalina.bat', 'rt+') as f:
+                        
+                        try:
+                            with open(tomcatPath + '\\' + fileNames, 'r') as f:
+                                newValue = pathRec_entry.get()
+                                newline = []
+                                for word in f.readlines():
+                                    newline.append(word.replace('CATALINA_HOME', newValue))
+                            
+                            with open(tomcatPath + '\\' + fileNames, 'w') as f:
+                                for line in newline:
+                                    f.writelines(line)
+                        except Exception as E:
+                            print(E)
+                        finally:
+                            f.close()
+
+            print('----------------------------------.bat파일 설정 종료----------------------------------')
 
         #개발서버 배포 버튼 클릭 시작
         def btnRelease95():
@@ -439,5 +484,5 @@ if __name__ == '__main__':
 
     #두번째 방법 사용
     #실제 사용시에는 주석 제거
-    #elevate()
+    elevate()
     main()
