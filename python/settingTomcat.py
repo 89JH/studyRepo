@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
-#from tkinter.scrolledtext import ScrolledText
 from tkinter.scrolledtext import *
 from ftplib import FTP
 import os
@@ -9,11 +8,7 @@ import sys
 import ctypes
 import urllib.parse
 import xml.etree.ElementTree as elemTree
-#import socket
-#import subprocess
 import collections
-#import re
-#import time
 
 #파일 및 디렉토리 복사할때사용하는 library
 import shutil, errno
@@ -118,7 +113,7 @@ class settingTomcat(Frame):
         
         btn_release95 = Button(frame01, width=42, text='개발(95)서버 배포(구현X)', command=lambda:btnRelease95)
         btn_release95.grid(row=18, column=0, columnspan=3)
-        btn_release = Button(frame01, width=42, text='운영(81,82,83)서버 배포(진행중)')
+        btn_release = Button(frame01, width=42, text='운영(81,82,83)서버 배포(진행중)', command=lambda:btnRelease)
         btn_release.grid(row=19, column=0, columnspan=3)
 
 
@@ -259,16 +254,25 @@ class settingTomcat(Frame):
         def btnPcheck():
             print('----------------------------------톰캣포트확인 시작----------------------------------')
             #포트 8080 대상목록 .txt 파일로 저장
-            os.system('netstat -anp tcp | findstr 8080 >> c:\\test.txt')
+            #운영
+            #os.system('netstat -anp tcp | findstr 8080 >> c:\\test.txt')
+            #개발
+            os.system('netstat -anp tcp | findstr 8080 >> d:\\test.txt')
 
-            filePath = 'c:\\test.txt'
+            #운영
+            #filePath = 'c:\\test.txt'
+            #개발
+            filePath = 'd:\\test.txt'
             ipnPort = re.findall(r'\d+[.]\d+[.]\d+[.]\d+[:]\d+', open(filePath).read().lower())
 
             data = []
             for x,y in collections.Counter(ipnPort).most_common():
                 data.append(int(str(x).rpartition(':')[2]))
 
-            os.remove('c:\\test.txt')
+            #운영
+            #os.remove('c:\\test.txt')
+            #개발
+            os.remove('d:\\test.txt')
             if len(data) == 0:
                 messagebox.showerror("오류", "현재 오픈되어있는 8080포트가 존재하지 않습니다.")
                 return
@@ -297,7 +301,11 @@ class settingTomcat(Frame):
             #global ajpPort 
             #ajpPort = prePortNum + '8009'
 
-            prePortNum = str(int(maxPort[:1])+1)
+            if len(maxPort) == 4: #자릿수가 4자리일때는 앞자리 '1' ex)8080
+                prePortNum = '1'
+            elif len(maxPort) == 5: #자릿수가 5자리일대는 max+1 ex)18080
+                prePortNum = str(int(maxPort[:1])+1)
+
             portData['returnPort'] = prePortNum + '8080'
             #portData['shutdownPort'] = prePortNum + '8005'
             portData['shutdownPort'] = '-1'
@@ -380,7 +388,12 @@ class settingTomcat(Frame):
             except Exception as E:
                 print('ftp연결 실패-' + E)
             '''
-        #개발서버 배포 버튼 클릭 종룔
+        #개발서버 배포 버튼 클릭 종료
+
+        #운영서버 배포 버튼 클릭 시작
+        def btnRelease():
+            print('----------------------------------운영서버 배포 시작----------------------------------')
+
 
 ''' 첫번째 - 관리자 권한으로 실행하기, 이 방법을 사용하면
     2개의 프로그램이 실행된다.. 관리자모드, 일반모드
