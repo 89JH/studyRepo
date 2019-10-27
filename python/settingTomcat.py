@@ -261,6 +261,27 @@ class settingTomcat(Frame):
                         # server.xml파일에 적용..
                         tree.write(file)
 
+            for (path, dir, files) in os.walk(tomcatPath):
+                for fileNames in files:
+                    # 아래 코드는 확장자만 찾아서 가져온다.
+                    # 배치파일 수정할때 필요할듯 싶어서 남겨둠
+                    # ext = os.path.splitext(fileNames)[-1]
+                    if fileNames == 'workers.properties':
+                        try:
+                            with open(tomcatPath + '\\' + fileNames, 'r') as f:
+                                newValue = portAJP_entry.get()
+                                newline = []
+                                for word in f.readlines():
+                                    newline.append(word.replace('8009', newValue))
+
+                            with open(tomcatPath + '\\' + fileNames, 'w') as f:
+                                for line in newline:
+                                    f.writelines(line)
+                        except Exception as E:
+                            print(E)
+                        finally:
+                            f.close()
+
             print('----------------------------------server.xml 설정 종료----------------------------------')
 
         # ---------------------------------폼캣포트확인 버튼 클릭 시작---------------------------------
@@ -495,7 +516,7 @@ class settingTomcat(Frame):
                         except Exception as E:
                             print(E)
                         finally:
-                            f.close()            
+                            f.close()
             print('----------------------------------Context,isapi 설정 종료----------------------------------')
 
 
