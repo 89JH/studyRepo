@@ -137,10 +137,9 @@ class settingTomcat(Frame):
             # 운영시에는 'CATALINA_HOME' 으로 변경
             sorted(sKeys)
             maxValue = 'CATALINA_HOME'
-            maxNum = 0
+            maxNum = ''
 
             for item in sKeys:
-
                 if 'CATALINA_HOME' in item:
                     if maxValue < item:
                         maxValue = item
@@ -148,7 +147,7 @@ class settingTomcat(Frame):
                     sValue = os.environ[item]
                     text_cat.insert('end', '-' + item + '\n' + sValue + '\n')
 
-            maxNum = str(int(maxValue[13:]) + 1)
+            maxNum = str(int(maxValue[13:]) + 1 if len(maxValue) > 13 else '')
             returnVal = maxValue.replace(maxValue[13:], maxNum)
             pathRec_entry.insert('end', returnVal)
             print('cat버튼클릭')
@@ -174,10 +173,14 @@ class settingTomcat(Frame):
 
             # 개발서버에서 실행시 특정 폴더에서 복사해오는걸로 설정.. 테스트도 필요
             # 테스트용
-            pathData['bDir'] = 'D:\\Apache Software Foundation'
+            #pathData['bDir'] = 'D:\\Apache Software Foundation'
+            #83번서버에서 테스트 결과 성공
+            #pathData['bDir'] = '\\\\tsclient\\C\\copyingTomcat\\Apache Software Foundation'
+            pathData['bDir'] = 'C:\\copyingTomcat\\Apache Software Foundation'
             # 실제 운영용
-            #pathData['bDir'] = 개발서버 특정 경로 지정해서 사용해보기.
-            pathData['tDir'] = 'D:\\Apache Software Foundation' + '_' + projectNm_entry.get().replace(' ', '')
+            pathData['tDir'] = 'C:\\Program Files\\Apache Software Foundation' + '_' + projectNm_entry.get().replace(' ', '')
+            #테스트용
+            #pathData['tDir'] = 'D:\\Apache Software Foundation' + '_' + projectNm_entry.get().replace(' ', '')
 
             try:
                 shutil.copytree(pathData['bDir'], pathData['tDir'])
@@ -195,7 +198,8 @@ class settingTomcat(Frame):
             print('----------------------------------server.xml 설정 시작----------------------------------')
             # 테스트용
             # 실제 개발/운영서버에는 톰캣 8.0 버전을 쓰고있으므로, 버전을 바꿔줘야한다.
-            tomcatPath = pathData['tDir'] + '\\Tomcat 8.5\\conf'
+            #tomcatPath = pathData['tDir'] + '\\Tomcat 8.5\\conf'
+            tomcatPath = pathData['tDir'] + '\\Tomcat 8.0\\conf'
 
             if tomcatPath == '':
                 messagebox.showerror('오류', '경로가 지정되지 않았습니다.')
@@ -289,16 +293,15 @@ class settingTomcat(Frame):
             print('----------------------------------톰캣포트확인 시작----------------------------------')
             # 포트 8080 대상목록 .txt 파일로 저장
             #운영용
-            #os.system('netstat -anp tcp | findstr 8080 >> c:\\test.txt')
-
+            os.system('netstat -anp tcp | findstr 8080 >> c:\\test.txt')
             #테스트용
-            os.system('netstat -anp tcp | findstr 8080 >> d:\\test.txt')
+            #os.system('netstat -anp tcp | findstr 8080 >> d:\\test.txt')
 
             #실 운영용
-            #filePath = 'c:\\test.txt'
-
+            filePath = 'c:\\test.txt'
             #테스트용
-            filePath = 'd:\\test.txt'
+            #filePath = 'd:\\test.txt'
+            
             ipnPort = re.findall(r'\d+[.]\d+[.]\d+[.]\d+[:]\d+', open(filePath).read().lower())
 
             data = []
@@ -306,10 +309,10 @@ class settingTomcat(Frame):
                 data.append(int(str(x).rpartition(':')[2]))
 
             #실운영용
-            #os.remove('c:\\test.txt')
-
+            os.remove('c:\\test.txt')
             #테스트용
-            os.remove('d:\\test.txt')
+            #os.remove('d:\\test.txt')
+            
             if len(data) == 0:
                 messagebox.showerror("오류", "현재 오픈되어있는 8080포트가 존재하지 않습니다.")
                 return
@@ -379,7 +382,8 @@ class settingTomcat(Frame):
             print('----------------------------------.bat파일 설정 시작----------------------------------')
             # 테스트용
             # 실제 개발/운영서버에는 톰캣 8.0 버전을 쓰고있으므로, 버전을 바꿔줘야한다.
-            tomcatPath = pathData['tDir'] + '\\Tomcat 8.5\\bin'
+            #tomcatPath = pathData['tDir'] + '\\Tomcat 8.5\\bin'
+            tomcatPath = pathData['tDir'] + '\\Tomcat 8.0\\bin'
 
             if tomcatPath == '':
                 messagebox.showerror('오류', '경로가 지정되지 않았습니다.')
@@ -436,9 +440,12 @@ class settingTomcat(Frame):
             print('----------------------------------Context,isapi 설정 시작----------------------------------')
             # 테스트용
             # 실제 개발/운영서버에는 톰캣 8.0 버전을 쓰고있으므로, 버전을 바꿔줘야한다.
-            tomcatPath = pathData['tDir'] + '\\Tomcat 8.5\\conf\\Catalina\\localhost'
-            isapiPath = pathData['tDir'] + '\\Tomcat 8.5\\isapi'
-            targetPath = pathData['tDir'] + '\\Tomcat 8.5'
+            #tomcatPath = pathData['tDir'] + '\\Tomcat 8.5\\conf\\Catalina\\localhost'
+            #isapiPath = pathData['tDir'] + '\\Tomcat 8.5\\isapi'
+            #targetPath = pathData['tDir'] + '\\Tomcat 8.5'
+            tomcatPath = pathData['tDir'] + '\\Tomcat 8.0\\conf\\Catalina\\localhost'
+            isapiPath = pathData['tDir'] + '\\Tomcat 8.0\\isapi'
+            targetPath = pathData['tDir'] + '\\Tomcat 8.0'
 
             if tomcatPath == '':
                 messagebox.showerror('오류', '경로가 지정되지 않았습니다.')
@@ -462,17 +469,17 @@ class settingTomcat(Frame):
                         res02 = tree.find('Resource[2]')
                         
                         #웹소스 폴더
-                        docPath = 'C:\\test'
+                        docPath = 'C:/geoyoung_web/folder'
                         #서비스 파일에 등록된 DB Connection명
-                        dbNm01 = 'test_DB'
+                        dbNm01 = 'MSSQL_'
                         #서비스 파일에 등록된 DB Connection명(읽기전용)
-                        dbNm02 = 'test_DB_R'
+                        dbNm02 = 'MSSQL_'
                         #DB접속정보(MSSQL)
-                        dbUrl = 'jdbc:sqlserver://111.111.111.111:1433;databaseName=TEST'
+                        dbUrl = 'jdbc:sqlserver://사용ip:사용port;databaseName=사용db명'
                         #접속ID
-                        dbId = 'test'
+                        dbId = 'ID'
                         #접속PW
-                        dbPw = 'test'
+                        dbPw = 'PW'
 
                         print('-----------------------------------Context 설정 시작-----------------------------------')
                         for con in root.iter('Context'):
@@ -627,5 +634,5 @@ if __name__ == '__main__':
 
     # 두번째 방법 사용
     # 실제 사용시에는 주석 제거
-    #elevate()
+    elevate()
     main()

@@ -46,7 +46,9 @@ myBool2 = True
 print(myBool2)
 print(type(myBool2))
 
-
+i = 10
+print(i)
+print(type(i))
 
 
 
