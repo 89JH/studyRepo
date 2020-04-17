@@ -120,9 +120,9 @@ class settingTomcat(Frame):
         btn_setBat = Button(frame01, width=42, text='.bat 파일 세팅', command=lambda: btnSetBat())
         btn_setBat.grid(row=18, column=0, columnspan=3)
 
-        btn_release95 = Button(frame01, width=42, text='개발(95)서버 배포(구현X)', command=lambda: btnRelease95)
+        btn_release95 = Button(frame01, width=42, text='개발()서버 배포(구현X)', command=lambda: btnRelease95)
         btn_release95.grid(row=19, column=0, columnspan=3)
-        btn_release = Button(frame01, width=42, text='운영(81,82,83)서버 배포(진행중)')
+        btn_release = Button(frame01, width=42, text='운영(1,2,3)서버 배포(진행중)')
         btn_release.grid(row=20, column=0, columnspan=3)
 
         # 외부 프로그램 실행 - os.system('notepad')
@@ -197,9 +197,9 @@ class settingTomcat(Frame):
         def btnConfig():
             print('----------------------------------server.xml 설정 시작----------------------------------')
             # 테스트용
-            # 실제 개발/운영서버에는 톰캣 8.0 버전을 쓰고있으므로, 버전을 바꿔줘야한다.
+            # 실제 개발/운영서버에는 톰캣 다른 버전을 쓰고있으므로, 버전을 바꿔줘야한다.
             #tomcatPath = pathData['tDir'] + '\\Tomcat 8.5\\conf'
-            tomcatPath = pathData['tDir'] + '\\Tomcat 8.0\\conf'
+            tomcatPath = pathData['tDir'] + '\\Tomcat 버전\\conf'
 
             if tomcatPath == '':
                 messagebox.showerror('오류', '경로가 지정되지 않았습니다.')
@@ -293,14 +293,14 @@ class settingTomcat(Frame):
             print('----------------------------------톰캣포트확인 시작----------------------------------')
             # 포트 8080 대상목록 .txt 파일로 저장
             #운영용
-            os.system('netstat -anp tcp | findstr 8080 >> c:\\test.txt')
+            #os.system('netstat -anp tcp | findstr 8080 >> c:\\test.txt')
             #테스트용
-            #os.system('netstat -anp tcp | findstr 8080 >> d:\\test.txt')
+            os.system('netstat -anp tcp | findstr 8080 >> d:\\test.txt')
 
             #실 운영용
-            filePath = 'c:\\test.txt'
+            #filePath = 'c:\\test.txt'
             #테스트용
-            #filePath = 'd:\\test.txt'
+            filePath = 'd:\\test.txt'
             
             ipnPort = re.findall(r'\d+[.]\d+[.]\d+[.]\d+[:]\d+', open(filePath).read().lower())
 
@@ -309,9 +309,9 @@ class settingTomcat(Frame):
                 data.append(int(str(x).rpartition(':')[2]))
 
             #실운영용
-            os.remove('c:\\test.txt')
+            #os.remove('c:\\test.txt')
             #테스트용
-            #os.remove('d:\\test.txt')
+            os.remove('d:\\test.txt')
             
             if len(data) == 0:
                 messagebox.showerror("오류", "현재 오픈되어있는 8080포트가 존재하지 않습니다.")
@@ -381,9 +381,9 @@ class settingTomcat(Frame):
         def btnSetBat():
             print('----------------------------------.bat파일 설정 시작----------------------------------')
             # 테스트용
-            # 실제 개발/운영서버에는 톰캣 8.0 버전을 쓰고있으므로, 버전을 바꿔줘야한다.
+            # 실제 개발/운영서버에는 톰캣 다른 버전을 쓰고있으므로, 버전을 바꿔줘야한다.
             #tomcatPath = pathData['tDir'] + '\\Tomcat 8.5\\bin'
-            tomcatPath = pathData['tDir'] + '\\Tomcat 8.0\\bin'
+            tomcatPath = pathData['tDir'] + '\\Tomcat 버전\\bin'
 
             if tomcatPath == '':
                 messagebox.showerror('오류', '경로가 지정되지 않았습니다.')
@@ -439,13 +439,13 @@ class settingTomcat(Frame):
         def btnContext():
             print('----------------------------------Context,isapi 설정 시작----------------------------------')
             # 테스트용
-            # 실제 개발/운영서버에는 톰캣 8.0 버전을 쓰고있으므로, 버전을 바꿔줘야한다.
+            # 실제 개발/운영서버에는 톰캣 다른 버전을 쓰고있으므로, 버전을 바꿔줘야한다.
             #tomcatPath = pathData['tDir'] + '\\Tomcat 8.5\\conf\\Catalina\\localhost'
             #isapiPath = pathData['tDir'] + '\\Tomcat 8.5\\isapi'
             #targetPath = pathData['tDir'] + '\\Tomcat 8.5'
-            tomcatPath = pathData['tDir'] + '\\Tomcat 8.0\\conf\\Catalina\\localhost'
-            isapiPath = pathData['tDir'] + '\\Tomcat 8.0\\isapi'
-            targetPath = pathData['tDir'] + '\\Tomcat 8.0'
+            tomcatPath = pathData['tDir'] + '\\Tomcat 버전\\conf\\Catalina\\localhost'
+            isapiPath = pathData['tDir'] + '\\Tomcat 버전\\isapi'
+            targetPath = pathData['tDir'] + '\\Tomcat 버전'
 
             if tomcatPath == '':
                 messagebox.showerror('오류', '경로가 지정되지 않았습니다.')
@@ -469,13 +469,13 @@ class settingTomcat(Frame):
                         res02 = tree.find('Resource[2]')
                         
                         #웹소스 폴더
-                        docPath = 'C:/geoyoung_web/folder'
+                        docPath = 'path'
                         #서비스 파일에 등록된 DB Connection명
-                        dbNm01 = 'MSSQL_'
+                        dbNm01 = 'shecma'
                         #서비스 파일에 등록된 DB Connection명(읽기전용)
-                        dbNm02 = 'MSSQL_'
+                        dbNm02 = 'schema'
                         #DB접속정보(MSSQL)
-                        dbUrl = 'jdbc:sqlserver://사용ip:사용port;databaseName=사용db명'
+                        dbUrl = 'jdbc및ip,port;databaseName=사용db명'
                         #접속ID
                         dbId = 'ID'
                         #접속PW
